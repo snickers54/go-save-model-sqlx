@@ -16,6 +16,9 @@ u.Save()
 I didn't wanted to produce a separate object, struct of control or anything. I could've done a UserMapper object which is charged to save my primitive model. Or any other pattern. My goal was to be close of common ORM you can find in other languages.
 This is not perfect, but it's working :)
 
+## Install
+`go get -u github.com/snickers54/go-save-model-sqlx`
+`import github.com/snickers54/go-save-model-sqlx/models`
 ## HOWTO
 The only file you want to include in your project, is `models/model.go`. The others are just here to create a viable example of use.
 I've based my runtime reflection on a common tag "db" used by others. I could've done a go generate and based my reflection on compile time stuff. But didn't wanted to.
