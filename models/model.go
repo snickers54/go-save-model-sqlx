@@ -7,7 +7,7 @@ import (
     "fmt"
     "reflect"
     "strings"
-    // "log"
+    "log"
 )
 type AutoIncr struct {
     ID       uint64 `db:"id" json:"id" primary:"-"`
@@ -19,6 +19,9 @@ type AutoIncr struct {
 
 type Model interface {
     Save() error
+}
+
+type Table interface {
     Table() string
 }
 
@@ -42,6 +45,7 @@ func reflectStatements(obj interface{}, withPrimary bool) string {
     if val.Kind() == reflect.Ptr {
       val = val.Elem()
     }
+
     var str []string
     // if what is given is not a structure, we just return empty string and it wont be counted
     if val.Kind() != reflect.Struct {
@@ -58,7 +62,7 @@ func reflectStatements(obj interface{}, withPrimary bool) string {
         // if we detect this field has a tag called `primary` and we don't want primary key to be used (for INSERT) we continue
         if len(tag.Get("primary")) > 0 && withPrimary == false {continue;}
         // log.Println(tag.Get("db"), valueField.Kind().String(), valueField.MethodByName("String").IsValid(), valueField.Type())
-        // Here, if we detect the field itself is a struct, and if this struct doesn't implement neither the stringer and valuer interface we call ourselves
+        // Here, if we detect the field itself is a struct, and if this struct doesn't implement neither the stringer and valuer interfacep we call ourselves
         if valueField.Kind().String() == "struct" && valueField.Type().Implements(stringerType) == false &&
             valueField.Type().Implements(valuerType) == false {
             if recursive := reflectStatements(valueField.Interface(), withPrimary); len(recursive) > 0 {
@@ -105,8 +109,22 @@ func reflectStatements(obj interface{}, withPrimary bool) string {
     return strings.Join(str, ",")
 }
 
+func getTable(obj interface{}) string {
+    val := reflect.ValueOf(obj)
+    // if a pointer to a struct is passed, get the vale of the dereferenced object
+    if val.Kind() == reflect.Ptr {
+      val = val.Elem()
+    }
+    if _, found := obj.(Table); found {
+        return obj.(Table).Table()
+    }
+    return strings.ToLower(val.Type().Name())
+}
+
 func Update(obj interface{}, db *sqlx.DB) (int64, error) {
-    var str string = "UPDATE " + obj.(Model).Table() + " SET " + reflectStatements(obj, true)
+    stmts := reflectStatements(obj, true)
+    var str string = "UPDATE " + getTable(obj) + " SET " + stmts
+    log.Println(str)
     result, err := db.Exec(str)
     nbRows, _ := result.RowsAffected()
     return nbRows, err
@@ -115,7 +133,9 @@ func Update(obj interface{}, db *sqlx.DB) (int64, error) {
 func Save(obj interface{}, db *sqlx.DB) (int64, error) {
     // Maybe you don't know, but in MySQL at least, you can use the SET syntax like Update for an Insert
     // I've to check if it's compatible with others sql dbs
-    var str string = "INSERT INTO " + obj.(Model).Table() + " SET " + reflectStatements(obj, false)
+    stmts := reflectStatements(obj, false)
+    var str string = "INSERT INTO " + getTable(obj) + " SET " + stmts
+    log.Println(str)
     result, err := db.Exec(str)
     lastId, _ := result.LastInsertId()
     return lastId, err

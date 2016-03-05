@@ -16,7 +16,7 @@ type User struct {
 type Users []User
 
 func (u *User) Table() string {
-    return "user"
+    return "user_test"
 }
 
 // example of implementation of Save method for my custom model
