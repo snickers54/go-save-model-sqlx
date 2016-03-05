@@ -14,7 +14,6 @@ type AutoIncr struct {
     Created  time.Time `db:"created_at" json:"created_at"`
     Updated  time.Time `db:"updated_at" json:"updated_at"`
     // this will not be used during the reflection
-    Driver
 }
 
 type Model interface {
@@ -30,12 +29,6 @@ func bool2int(b bool) int {
       return 1
    }
    return 0
-}
-// Made this, only to embbed a way to add an access to a *sqlx.DB from inside the object
-type Driver struct {}
-
-func (d *Driver) db() (*sqlx.DB) {
-    return GetInstance()
 }
 
 func reflectStatements(obj interface{}, withPrimary bool) string {

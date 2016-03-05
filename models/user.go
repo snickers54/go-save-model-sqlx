@@ -34,16 +34,19 @@ func (u *User) Save() error {
 }
 
 func (u *User) GetById(id string) error {
-    return u.db().Get(u, "SELECT * FROM user WHERE id = '?'", id)
+    db := GetInstance()
+    return db.Get(u, "SELECT * FROM user WHERE id = '?'", id)
 }
 
 func (u *User) DeleteById(id string) error{
-    _, err := u.db().Exec("DELETE FROM user WHERE id = ?", id)
+    db := GetInstance()
+    _, err := db.Exec("DELETE FROM user WHERE id = ?", id)
     return err
 }
 
 func (u *User) Get(limit, offset, order, sense string) (Users, error) {
     users := Users{}
-    err := u.db().Get(&users, "SELECT * FROM user WHERE limit ?,? ORDER BY ? ?", limit, offset, order, sense)
+    db := GetInstance()
+    err := db.Get(&users, "SELECT * FROM user WHERE limit ?,? ORDER BY ? ?", limit, offset, order, sense)
     return users, err
 }

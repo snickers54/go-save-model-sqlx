@@ -33,12 +33,3 @@ By default, you can build, but it won't run, the `models/mysql.go` file is tryin
 ### AutoIncr struct
 This struct is for my personal use, really often needed in my models, it's only about a auto-incremental primary key and two fields representing creation and update dates..
 I let it in `models/model.go` because I think it's interesting and needed in my example to show how it's handled by the reflectStatements function.
-
-### Driver struct
-This struct is by default embbed into the AutoIncr struct.
-This is an empty struct, no fields at all, only a method to get an instance of sql.DB or sqlx.DB. It's needed in my example to show that the reflection is not gonna use it because it's an empty struct. But it's also really useful, because I'm able to do something like that :
-```golang
-u := User{}
-u.db().Exec("...")
-```
-I didn't export the symbol, because you should not use this in anything else than the `models` package.
