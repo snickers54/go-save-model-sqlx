@@ -48,12 +48,21 @@ func reflectStatements(obj interface{}, withPrimary bool) string {
     valuerType := reflect.TypeOf((*driver.Valuer)(nil)).Elem()
     stringerType := reflect.TypeOf((*fmt.Stringer)(nil)).Elem()
     // we iterate on our struct fields
+    
+    whereStr := ""
+
     for i := 0; i < val.NumField(); i++ {
 		valueField := val.Field(i)
 		typeField := val.Type().Field(i)
 		tag := typeField.Tag
         // if we detect this field has a tag called `primary` and we don't want primary key to be used (for INSERT) we continue
-        if len(tag.Get("primary")) > 0 && withPrimary == false {continue;}
+        if len(tag.Get("primary")) > 0 && withPrimary == false {
+	   continue;
+	} else if len(tag.Get("primary")) > 0 && withPrimary == true {
+	  var r interface{} = valueField.Interface()
+	  whereStr = " WHERE " + fmt.Sprintf("`%s` = '%v'", tag.Get("db"), r)
+	  continue;
+	}
         // log.Println(tag.Get("db"), valueField.Kind().String(), valueField.MethodByName("String").IsValid(), valueField.Type())
         // Here, if we detect the field itself is a struct, and if this struct doesn't implement neither the stringer and valuer interfacep we call ourselves
         if valueField.Kind().String() == "struct" && valueField.Type().Implements(stringerType) == false &&
@@ -99,7 +108,7 @@ func reflectStatements(obj interface{}, withPrimary bool) string {
 	}
     // log.Println(str)
     // we simply join them with a coma
-    return strings.Join(str, ",")
+    return strings.Join(str, ",") + whereStr
 }
 
 func getTable(obj interface{}) string {
