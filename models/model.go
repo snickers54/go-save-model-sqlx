@@ -10,7 +10,7 @@ import (
     "log"
 )
 type AutoIncr struct {
-    ID       uint64 `db:"id" json:"id" primary:"-"`
+    ID       int64 `db:"id" json:"id" primary:"-"`
     Created  time.Time `db:"created_at" json:"created_at"`
     Updated  time.Time `db:"updated_at" json:"updated_at"`
     // this will not be used during the reflection

@@ -28,7 +28,7 @@ func (u *User) Save() error {
         _, err = Update(u, GetInstance())
     } else {
         lastId, err = Save(u, GetInstance())
-        u.ID = uint64(lastId)
+        u.ID = lastId
     }
     return err
 }
